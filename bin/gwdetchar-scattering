@@ -269,14 +269,10 @@ page.add('A summary of triggers that occur during active scattering '
 page.a(os.path.basename(summfile), href=summfile, target='_blank')
 page.p.close()
 
-if statea:  # contextual information
-    page.div(class_='alert alert-default')
-    page.p("The channels below were searched for evidence of scattering "
-           "(yellow = weak evidence, red = strong evidence)")
-else:  # no active analysis segments found
+if not statea:
     page.div(class_='alert alert-warning')
     page.p('No active analysis segments were found')
-page.div.close()
+    page.div.close()
 
 # record state segments
 if args.state_flag is not None:
@@ -301,7 +297,7 @@ alldata = []
 n = len(statea)
 for i, seg in enumerate(statea):
     msg = "{0}/{1} {2}:".rjust(30).format(
-        str(i).rjust(len(str(n))),
+        str(i + 1).rjust(len(str(n))),
         n,
         str(seg),
     ) if args.verbose else False
