@@ -240,7 +240,7 @@ links = [
     ('Parameters', '#parameters'),
     ('Segments', (
         ('State flag', '#state-flag'),
-        ('Optical sensors (OSEMs)', '#osems'),
+        ('Optical sensors', '#osems'),
         ('Transmons', '#transmons'),
     )),
 ]
@@ -254,28 +254,13 @@ page = htmlio.new_bootstrap_page(
 page.div(class_='page-header')
 page.h1('%s Scattering: %d-%d'
         % (args.ifo, int(args.gpsstart), int(args.gpsend)))
-page.div(class_='alert alert-info')
-paper = markup.oneliner.a(
-    'Accadia et al. (2010)', target='_blank', class_='alert-link',
-    href='http://iopscience.iop.org/article/10.1088/0264-9381/27/19/194011')
-page.p("Segments marked \"optical sensors\" below show evidence of beam "
-       "scattering between {0} and {1} Hz based on the velocity of optic "
-       "motion, with fringe frequencies projected using equation (3) of {2}. "
-       "Segments marked \"transmons\" are based on whitened, band-limited "
-       "RMS trends of transmon sensors. In both cases, yellow panels denote "
-       "weak evidence for scattering, while red panels denote strong "
-       "evidence.".format(
-           args.fmin, multiplier * args.frequency_threshold, str(paper)))
-page.div.close()  # alert alert-info
 page.div.close()  # page-header
 page.add(htmlio.write_arguments(
     [], start=int(args.gpsstart), end=int(args.gpsend), flag=args.state_flag))
-
-# section header
-page.h2('Segments', id_='segments')
+page.add('<hr class="row-divider">')
 
 # link to summary files
-page.div(class_='btn-group')
+page.div(class_='btn-group desktop-only')
 page.button(id_='summary-download', type='button',
             class_='btn btn-default dropdown-toggle',
             **{'data-toggle': 'dropdown'})
@@ -291,7 +276,25 @@ for text, path in zip(
 page.ul.close()
 page.div.close()  # btn-group
 
-if not statea:  # null segments
+# section header
+page.h2('Segments', id_='segments')
+
+if statea:  # contextual information
+    page.div(class_='alert alert-info')
+    paper = markup.oneliner.a(
+        'Accadia et al. (2010)', target='_blank', class_='alert-link',
+        href='http://iopscience.iop.org/article/10.1088/0264-9381/27'
+             '/19/194011')
+    page.p("Segments marked \"optical sensors\" below show evidence of beam "
+           "scattering between {0} and {1} Hz based on the velocity of optic "
+           "motion, with fringe frequencies projected using equation (3) of "
+           "{2}. Segments marked \"transmons\" are based on whitened, "
+           "band-limited RMS trends of transmon sensors. In both cases, "
+           "yellow panels denote weak evidence for scattering, while red "
+           "panels denote strong evidence.".format(
+               args.fmin, multiplier * args.frequency_threshold, str(paper)))
+    page.div.close()  # alert alert-info
+else:  # null segments
     page.div(class_='alert alert-warning')
     page.p('No active analysis segments were found')
     page.div.close()
@@ -659,6 +662,7 @@ if not actives:
     page.div(class_='alert alert-info')
     page.p('No evidence of scattering found in the channels analyzed')
     page.div.close()
+page.add('<hr class="row-divider">')
 
 # identify triggers during active segments
 logger.debug('Writing a summary CSV record')
