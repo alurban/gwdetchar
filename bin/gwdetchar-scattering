@@ -33,6 +33,8 @@ from io import StringIO
 
 import numpy
 
+from MarkupPy import markup
+
 from matplotlib import (use, rcParams)
 use('agg')  # noqa
 
@@ -243,7 +245,7 @@ links = [
     )),
 ]
 if args.omega_scans:
-    links.append(('Omega Scans', '#omega-scans'))
+    links.append(('Scans', '#omega-scans'))
 (brand, class_) = htmlio.get_brand(args.ifo, 'Scattering', args.gpsstart)
 navbar = htmlio.navbar(links, class_=class_, brand=brand)
 page = htmlio.new_bootstrap_page(
@@ -252,24 +254,44 @@ page = htmlio.new_bootstrap_page(
 page.div(class_='page-header')
 page.h1('%s Scattering: %d-%d'
         % (args.ifo, int(args.gpsstart), int(args.gpsend)))
+page.div(class_='alert alert-info')
+paper = markup.oneliner.a(
+    'Accadia et al. (2010)', target='_blank', class_='alert-link',
+    href='http://iopscience.iop.org/article/10.1088/0264-9381/27/19/194011')
+page.p("Segments marked \"optical sensors\" below show evidence of beam "
+       "scattering between {0} and {1} Hz based on the velocity of optic "
+       "motion, with fringe frequencies projected using equation (3) of {2}. "
+       "Segments marked \"transmons\" are based on whitened, band-limited "
+       "RMS trends of transmon sensors. In both cases, yellow panels denote "
+       "weak evidence for scattering, while red panels denote strong "
+       "evidence.".format(
+           args.fmin, multiplier * args.frequency_threshold, str(paper)))
+page.div.close()  # alert alert-info
 page.div.close()  # page-header
 page.add(htmlio.write_arguments(
     [], start=int(args.gpsstart), end=int(args.gpsend), flag=args.state_flag))
 
-# link segments file
+# section header
 page.h2('Segments', id_='segments')
-page.p()
-page.add('Full output segments are recorded in HDF5 format here:')
-page.a(os.path.basename(segfile), href=segfile, target='_blank')
-page.p.close()
-# link summary file
-page.p()
-page.add('A summary of triggers that occur during active scattering '
-         'segments is recorded in CSV format here:')
-page.a(os.path.basename(summfile), href=summfile, target='_blank')
-page.p.close()
 
-if not statea:
+# link to summary files
+page.div(class_='btn-group')
+page.button(id_='summary-download', type='button',
+            class_='btn btn-default dropdown-toggle',
+            **{'data-toggle': 'dropdown'})
+page.add('Download summary <span class="caret"></span>')
+page.button.close()
+page.ul(class_='dropdown-menu', role='menu',
+        **{'aria-labelledby': 'summary_table_download'})
+for text, path in zip(
+    ['Segments', 'Triggers'],
+    [segfile, summfile]
+):
+    page.li(markup.oneliner.a(text, href=path, download=path))
+page.ul.close()
+page.div.close()  # btn-group
+
+if not statea:  # null segments
     page.div(class_='alert alert-warning')
     page.p('No active analysis segments were found')
     page.div.close()
@@ -320,15 +342,7 @@ actives = SegmentList()
 # scattering based on OSEM velocity
 if statea:
     page.h3('Optical sensors (OSEMs)', id_='osems')
-    page.div(class_='alert alert-default')
-    page.p("This analysis searched for evidence of beam scattering between {} "
-           "and {} Hz based on the velocity of optic motion. The fringe "
-           "frequency is projected using equation (3) of <a href=\"http://"
-           "iopscience.iop.org/article/10.1088/0264-9381/27/19/194011\" "
-           "target=\"_blank\">Accadia et al. (2010)</a>.".format(
-               args.fmin, multiplier * args.frequency_threshold))
-    page.div.close()  # alert alert-default
-    page.div(class_='panel-group', id_='transmons')
+    page.div(class_='panel-group', id_='osems-group')
 logger.info('Searching for scatter based on OSEM velocity')
 
 for i, channel in enumerate(sorted(osems)):
@@ -568,10 +582,6 @@ if statea:  # close accordion
 # scattering based on transmon BLRMS
 if statea:
     page.h3('Transmons', id_='transmons')
-    page.div(class_='alert alert-default')
-    page.p("Evidence for scattering based on whitened, band-limited RMS "
-           "trends of the output of transmon sensors is shown below.")
-    page.div.close()  # alert alert-default
     page.div(class_='panel-group', id_='transmons-group')
 logger.info('Searching for scatter based on band-limited RMS of transmons')
 
@@ -685,13 +695,14 @@ if nscans > 0:
                                 outdir=scandir, condor_commands=condorcmds)
     logger.info('Launched {} omega scans to condor'.format(nscans))
     # render HTML
-    page.h2('Omega Scans', id_='omega-scans')
+    page.h2('Omega scans', id_='omega-scans')
     page.div(class_='alert alert-default')
     page.p('The following event times correspond to significant Omicron '
            'triggers that occur during the scattering segments found above. '
            'To compare these against fringe frequency projections, please '
            'use the scattering module:')
-    page.pre('$ python -m gwdetchar.scattering --help')
+    code = markup.oneliner.pre('$ python -m gwdetchar.scattering --help')
+    page.p(code)
     page.div.close()  # alert alert-default
     page.add(htmlio.scaffold_omega_scans(
         omegatimes, args.main_channel, scandir=scandir))
