@@ -23,7 +23,6 @@ import numpy
 from numpy import testing as nptest
 
 from gwpy.timeseries import TimeSeries
-from gwpy.segments import SegmentList
 from gwpy.testing.utils import assert_segmentlist_equal
 
 from .. import core
