@@ -573,9 +573,8 @@ if statea:  # close accordion
 if statea:
     page.h3('Transmons', id_='transmons')
     page.div(class_='alert alert-default')
-    page.p("This analysis searched for evidence of beam scattering based on "
-           "whitened, band-limited RMS trends of the output of transmon "
-           "sensors.")
+    page.p("Evidence for scattering based on whitened, band-limited RMS "
+           "trends of the output of transmon sensors is shown below.")
     page.div.close()  # alert alert-default
     page.div(class_='panel-group', id_='transmons-group')
 logger.info('Searching for scatter based on band-limited RMS of transmons')
