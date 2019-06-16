@@ -269,12 +269,12 @@ page.add('A summary of triggers that occur during active scattering '
 page.a(os.path.basename(summfile), href=summfile, target='_blank')
 page.p.close()
 
-# contextual information
-page.div(class_='alert alert-info')
-if statea:
+if statea:  # contextual information
+    page.div(class_='alert alert-default')
     page.p("The channels below were searched for evidence of scattering "
            "(yellow = weak evidence, red = strong evidence)")
-else:
+else:  # no active analysis segments found
+    page.div(class_='alert alert-warning')
     page.p('No active analysis segments were found')
 page.div.close()
 
