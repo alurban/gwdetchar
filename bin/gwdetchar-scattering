@@ -691,11 +691,13 @@ if nscans > 0:
     logger.info('Launched {} omega scans to condor'.format(nscans))
     # render HTML
     page.h2('Omega Scans', id_='omega-scans')
+    page.div(class_='alert alert-default')
     page.p('The following event times correspond to significant Omicron '
            'triggers that occur during the scattering segments found above. '
            'To compare these against fringe frequency projections, please '
            'use the scattering module:')
     page.pre('$ python -m gwdetchar.scattering --help')
+    page.div.close()  # alert alert-default
     page.add(htmlio.scaffold_omega_scans(
         omegatimes, args.main_channel, scandir=scandir))
 elif args.omega_scans:
