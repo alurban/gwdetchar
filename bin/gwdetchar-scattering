@@ -634,8 +634,8 @@ for i, channel in enumerate(sorted(transmons)):
     else:
         continue
     page.add(htmlio.write_flag_html(
-        flag, span, i, parent='transmons', title=channel,
-        context=context, plotdir=''))
+        scatter_segments[channel], span, i, parent='transmons',
+        title=channel, context=context, plotdir=''))
 
 if statea:  # close accordion
     page.div.close()
