@@ -234,7 +234,14 @@ logger.debug("%d read" % len(trigs))
 
 # -- prepare HTML -------------------------------------------------------------
 
-links = [(s, '#%s' % s.lower()) for s in ['Parameters', 'Segments']]
+links = [
+    ('Parameters', '#parameters'),
+    ('Segments', (
+        ('State flag', '#state-flag'),
+        ('Optical sensors (OSEMs)', '#osems'),
+        ('Transmons', '#transmons'),
+    )),
+]
 if args.omega_scans:
     links.append(('Omega Scans', '#omega-scans'))
 (brand, class_) = htmlio.get_brand(args.ifo, 'Scattering', args.gpsstart)
@@ -242,8 +249,10 @@ navbar = htmlio.navbar(links, class_=class_, brand=brand)
 page = htmlio.new_bootstrap_page(
     title='%s Scattering' % args.ifo,
     navbar=navbar)
+page.div(class_='page-header')
 page.h1('%s Scattering: %d-%d'
         % (args.ifo, int(args.gpsstart), int(args.gpsend)))
+page.div.close()  # page-header
 page.add(htmlio.write_arguments(
     [], start=int(args.gpsstart), end=int(args.gpsend), flag=args.state_flag))
 
@@ -271,7 +280,7 @@ page.div.close()
 
 # record state segments
 if args.state_flag is not None:
-    page.h3('State flag')
+    page.h3('State flag', id_='state-flag')
     page.div(class_='panel-group', id_='accordion1')
     page.add(htmlio.write_flag_html(
         state, span, 'state', parent='accordion1', context='success',
@@ -314,7 +323,7 @@ actives = SegmentList()
 
 # scattering based on OSEM velocity
 if statea:
-    page.h3('Optical sensors (OSEMs)')
+    page.h3('Optical sensors (OSEMs)', id_='osems')
     page.div(class_='alert alert-default')
     page.p("This analysis searched for evidence of beam scattering between {} "
            "and {} Hz based on the velocity of optic motion. The fringe "
@@ -562,13 +571,13 @@ if statea:  # close accordion
 
 # scattering based on transmon BLRMS
 if statea:
-    page.h3('Transmons')
+    page.h3('Transmons', id_='transmons')
     page.div(class_='alert alert-default')
     page.p("This analysis searched for evidence of beam scattering based on "
            "whitened, band-limited RMS trends of the output of transmon "
            "sensors.")
     page.div.close()  # alert alert-default
-    page.div(class_='panel-group', id_='transmons')
+    page.div(class_='panel-group', id_='transmons-group')
 logger.info('Searching for scatter based on band-limited RMS of transmons')
 
 for i, channel in enumerate(sorted(transmons)):
@@ -634,7 +643,7 @@ for i, channel in enumerate(sorted(transmons)):
     else:
         continue
     page.add(htmlio.write_flag_html(
-        scatter_segments[channel], span, i, parent='transmons',
+        scatter_segments[channel], span, i, parent='transmons-group',
         title=channel, context=context, plotdir=''))
 
 if statea:  # close accordion
